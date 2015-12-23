@@ -68,13 +68,12 @@ sample_data <- list(blogs_data_sample, news_data_sample, twitter_data_sample)
 cp <- Corpus(VectorSource(sample_data))
 
 #Clean up corpus
-cp <-tm_map(cp, removeWords, stopwords("english"))
 cp <- tm_map(cp, removeNumbers)
 cp <- tm_map(cp, removePunctuation)
 cp <- tm_map(cp, stripWhitespace)
 
 #Create doc term matrix
-dtm <- DocumentTermMatrix(cp)
+dtm <- DocumentTermMatrix(cp, control = list(stopwords = TRUE))
 
 #Find frequent words
 dtm_mtrx <- as.matrix(dtm)
@@ -82,15 +81,32 @@ frequency <- colSums(dtm_mtrx)
 frequency <- sort(frequency, decreasing = TRUE)
 wordcloud(names(frequency), frequency, min.freq = 25, random.order = FALSE, colors = brewer.pal(8, "Spectral"))
 
-#reclean for unigram
+#tokenize for unigrams
 
 ngramTokenizer <- function(l) {
     function(x) unlist(lapply(ngrams(words(x), l), paste, collapse = " "), use.names = FALSE)
 }
 
-bg_tdm <- TermDocumentMatrix(cp, control = list(tokenize = ngramTokenizer(2)))
-bg_matrix <- as.matrix(bg_tdm)
-bg_matrix <- rowSums(bg_matrix)
-bg_matrix <- sort(bg_matrix, decreasing = TRUE)
-final_bigram <- data.frame(terms = names(bg_matrix), freq = bg_matrix)
-final_bigram = transform(final_bigram, terms = colsplit(terms, split = " ", names = c('uni', 'bi')))
+#generate unigram data set
+generateNgramData <- function(n) {
+    ng_tdm <- TermDocumentMatrix(cp, control = list(tokenize = ngramTokenizer(n)))
+    ng_matrix <- as.matrix(ng_tdm)
+    ng_matrix <- rowSums(ng_matrix)
+    ng_matrix <- sort(ng_matrix, decreasing = TRUE)
+    final_ngram <- data.frame(terms = names(ng_matrix), freq = ng_matrix)
+    
+    if(n == 2) columns <- c('one', 'two')
+    if(n == 3) columns <- c('one', 'two', 'three')
+    if(n == 4) columns <- c('one', 'two', 'three', 'four')
+    
+    final_ngram <- transform(final_ngram, terms = colsplit(terms, split = " ", names = columns ))
+    final_ngram
+}
+final_unigram <- generateNgramData(2)
+final_bigram <- generateNgramData(3)
+final_trigram <- generateNgramData(4)
+
+#save final output for fast performace of Shiny App
+save(final_unigram, file = "data/final_unigram.Rda")
+save(final_bigram, file = "data/final_bigram.Rda")
+save(final_trigram, file = "data/final_trigram.Rda")
