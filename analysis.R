@@ -3,6 +3,7 @@ library(RWekajars)
 library(RWeka)
 library(wordcloud)
 require(openNLP)
+require(reshape)
 setwd("~/ACADEMICS/datascience/Final Capstone")
 
 #Corpus files dowloaded from:
@@ -81,9 +82,15 @@ frequency <- colSums(dtm_mtrx)
 frequency <- sort(frequency, decreasing = TRUE)
 wordcloud(names(frequency), frequency, min.freq = 25, random.order = FALSE, colors = brewer.pal(8, "Spectral"))
 
+#reclean for unigram
+
 ngramTokenizer <- function(l) {
     function(x) unlist(lapply(ngrams(words(x), l), paste, collapse = " "), use.names = FALSE)
 }
 
 bg_tdm <- TermDocumentMatrix(cp, control = list(tokenize = ngramTokenizer(2)))
-as.matrix(bg_tdm[1:50,])
+bg_matrix <- as.matrix(bg_tdm)
+bg_matrix <- rowSums(bg_matrix)
+bg_matrix <- sort(bg_matrix, decreasing = TRUE)
+final_bigram <- data.frame(terms = names(bg_matrix), freq = bg_matrix)
+final_bigram = transform(final_bigram, terms = colsplit(terms, split = " ", names = c('uni', 'bi')))
