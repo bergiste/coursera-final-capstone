@@ -107,6 +107,6 @@ final_bigram <- generateNgramData(3)
 final_trigram <- generateNgramData(4)
 
 #save final output for fast performace of Shiny App
-save(final_unigram, file = "data/final_unigram.Rda")
-save(final_bigram, file = "data/final_bigram.Rda")
-save(final_trigram, file = "data/final_trigram.Rda")
+saveRDS(final_unigram, file = "data/final_unigram.Rda")
+saveRDS(final_bigram, file = "data/final_bigram.Rda")
+saveRDS(final_trigram, file = "data/final_trigram.Rda")
