@@ -37,15 +37,50 @@ nextWordPredictor <- function(inputTxt) {
     
     numWords <- length(inputList)
     
+    runUnigram <- function(words){
+        unigram[unigram$terms$one == words,]$terms$two
+    }
+    
+    runBigram <- function(words){
+        bigram[bigram$terms$one == words[1] & 
+                   bigram$terms$two == words[2],]$terms$three
+    }
+    
+    runTrigram <- function(words){
+        trigram[ trigram$terms$one == words[1] & 
+                     trigram$terms$two == words[2] &
+                     trigram$terms$three == words[3],]$terms$four
+    }
+    
     if(numWords == 1) {
-        predList <- unigram[unigram$terms$one == inputTxt,]$terms$two
+        print("running unigram")
+        predList <- runUnigram(inputTxt)
     }else if (numWords == 2) {
-        predList <- bigram[bigram$terms$one == inputList[1] & 
-                           bigram$terms$two == inputList[2],]$terms$three
+        print("running bigram")
+        word1 <- inputList[1]
+        word2 <- inputList[2]
+        predList <- runBigram(c(word1, word2))
+        
+        if(length(predList) == 0){
+            print("Bigram failed running unigram")
+            predList <- runUnigram(word2)
+        }
     }else {
-        predList <- trigram[ trigram$terms$one == inputList[numWords-2] & 
-                             trigram$terms$two == inputList[numWords-1] &
-                             trigram$terms$three == inputList[numWords],]$terms$four
+        print("running trigram")
+        word1 <- inputList[numWords-2]
+        word2 <- inputList[numWords-1]
+        word3 <- inputList[numWords]
+        predList <- runTrigram(c(word1, word2, word3))
+        
+        if(length(predList) == 0){
+            print("trigram failed running bigram")
+            predList <- runBigram(c(word2,word3))
+        }
+        
+        if(length(predList) == 0){
+            print("bigram failed running unigram")
+            predList <- runUnigram(word3)
+        }
     }
     
     #Return top n predictors
@@ -55,5 +90,6 @@ nextWordPredictor <- function(inputTxt) {
     }
     
     as.character(predList)
+    
 }
 

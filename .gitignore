@@ -10,3 +10,12 @@ tm.pdf
 v25i05.pdf
 
 workspace.RData
+
+data/*
+quizzes.R
+
+data/final_bigram.Rda
+
+data/final_trigram.Rda
+
+data/final_unigram.Rda

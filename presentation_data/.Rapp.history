@@ -1,0 +1,2 @@
+load("/Users/bergiste/ACADEMICS/datascience/Final Capstone/data/final_unigram.Rda")
+head(final_unigram)
