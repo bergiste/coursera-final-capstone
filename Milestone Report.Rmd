@@ -1,23 +1,25 @@
 ---
 title: "Data Science Specialization - Milestone Report"
 author: "Jose Bergiste"
-date: "December 24, 2015"
+date: "December, 2015"
 output: 
   html_document: 
     keep_md: no
 ---
 
 
-The final capstone project for the Coursera Data Science Specialization is to create an application that predicts the next words in a phrase or sentence. To accomplish this, we will use natural language processing techniques, namely, [N-grams/Markov Models](https://en.wikipedia.org/wiki/n-grams) to evaluate statistical probabilities of the next word appearing based on the appearance of prior word(s). The types of data we will use will be a variety of large bodies of text documents (collectively referred to as a [Corpus](https://en.wikipedia.org/wiki/Text_corpus)). This report, will go into the details of the Corpus we have available and briefly discuss possibilities for modeling the data to accomplish the ultimate goal.
+The final capstone project for the Coursera Data Science Specialization is to create an application that predicts the next word in a phrase or sentence. To accomplish this, we will use natural language processing techniques, namely, [N-grams/Markov Models](https://en.wikipedia.org/wiki/n-grams) to evaluate statistical probabilities of the next word appearing based on the appearance of prior word(s). The types of data we will use will be a variety of large bodies of text documents (commonly referred to as a [Corpus (plural Corpora)](https://en.wikipedia.org/wiki/Text_corpus)). This report, will go into the details of the Corpora we have available and briefly discuss possibilities for modeling the data to accomplish the ultimate goal.
 
 ## Available Data
-For this project, we were provided a zip file of corpus files [downloadable here](http://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip). These files contained a set of twitter messages, news articles and blog entries in 4 different languages. Keep in mind that there are many other corpus documents available ([Reuters 215780](http://www.daviddlewis.com/resources/testcollections/reuters21578/) for example) but for our purposes we will focus on the provided US English set of documents.
+For this project, we were provided a zip file of corpus files [downloadable here](http://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip). These files contained a set of twitter messages, news articles and blog entries in 4 different languages. Keep in mind that there are many other corpus documents available online (e.g., [Reuters 215780](http://www.daviddlewis.com/resources/testcollections/reuters21578/) ) but, for our purposes, we will focus on the provided US English set of documents.
 
 ```{r setoptions, echo=FALSE, warning=FALSE, message=FALSE}
 library(knitr)
 opts_chunk$set(warning = FALSE, message = FALSE)
 library(wordcloud)
 setwd("~/ACADEMICS/datascience/Final Capstone")
+flist <- list.files("data", "+._frequency\\.Rda$|corpus_stats\\.Rda", full.names = TRUE)
+file.copy(flist, "presentation_data")
 corpus_table <- readRDS(file="presentation_data/corpus_stats.Rda")
 ```
 
@@ -30,10 +32,10 @@ kable(corpus_table,
       col.names = c("File", "Number of Lines", "Longest Line", "Number of Words", "File Size (MB)"))
 ```
 
-Blogs, our largest file, has the most number of words (over 37 million) but the least number of lines. The longest line in the blogs file (over 40 thousand characters) indicate that this file comprises of longer sentences and lengthier expression of ideas. News, our second largest file, also has the second largest number of lines (over 1 million), number of words (over 34 million) and longest line (over 11 thousand). I would consider the news file a good middle ground for sentence length and variety of word usage and ideas. Lastly, our Twitter file comprises of short phrases (maximum 140 characters). The Twitter file conseqently has the most number of lines (over 2 million) and the least number of words (over 30 million).
+Blogs, our largest file, has the most number of words (over 37 million) but the least number of lines. The longest line in the blogs file (over 40 thousand characters) indicate that this file comprises of longer sentences and lengthier expression of ideas. News, our second largest file, also has the second largest number of lines (over 1 million), number of words (over 34 million) and longest line (over 11 thousand). I would consider the news file a good middle ground for sentence length and variety of word usage and ideas. Lastly, our Twitter file comprises of short phrases (maximum 140 characters). The Twitter file consequently has the most number of lines (over 2 million) and the least number of words (over 30 million).
 
 ### Sampling
-Due to the large size of these files, processing the entire contents on a local computer could be time consuming. So, I chose to sample the data in order to move forwards as quickly as possible. I chose to set a sampling percentage of 10% (configurable) for each file and combined a them into a single file. The code below is how this was accomplished:
+Due to the large size of these files, processing the entire contents on a local computer proved to be time consuming. So, I chose to sample the data in order to move forward as quickly as possible. For each individual corpus, I chose to randomly sample 40% (configurable) of the document prior to performing exploratory analysis. After performing exploratory analysis on each individual corpus, I chose to set a sampling percentage of 10% (configurable) for each file and combined them into a single file. The code below is how this was accomplished for the full sample:
 
 ```{r eval=FALSE}
 set.seed(892)
@@ -45,8 +47,42 @@ sample_data <- list(blogs_data_sample, news_data_sample, twitter_data_sample)
 ```
 
 ### Common Words
+Words were independently analyzed in each of the corpus files (at a higher sample rate of 40%). Subsequently all files were combined and analyzed (at a lower sample rate of 10%). The most frequent words varied per corpus, however, the words "will", "just", and "can" made the top 10 in all 3 documents. The barplots and word clouds graphics below shows the details.
 
-Below is a summary of the most frequent words base on the sampled data:
+#### Blogs Data File
+Below is a summary of the most frequent words based on the **blogs** sampled data:
+
+```{r echo=FALSE}
+sample_freq <- readRDS("presentation_data/blogs_frequency.Rda")
+
+wordcloud(names(sample_freq), sample_freq, min.freq = 25, random.order = FALSE, colors = brewer.pal(8, "Spectral"))
+barplot(sample_freq[1:10], main = "Top Ten Words")
+```
+
+#### News Data File
+Below is a summary of the most frequent words bases on the **news** sampled data:
+
+```{r echo=FALSE}
+sample_freq <- readRDS("presentation_data/news_frequency.Rda")
+
+wordcloud(names(sample_freq), sample_freq, min.freq = 25, random.order = FALSE, colors = brewer.pal(8, "Spectral"))
+barplot(sample_freq[1:10], main = "Top Ten Words")
+```
+
+#### Twitter Data File
+
+Below is a summary of the most frequent words based on the **twitter** sampled data:
+
+```{r echo=FALSE}
+sample_freq <- readRDS("presentation_data/twitter_frequency.Rda")
+
+wordcloud(names(sample_freq), sample_freq, min.freq = 25, random.order = FALSE, colors = brewer.pal(8, "Spectral"))
+barplot(sample_freq[1:10], main = "Top Ten Words")
+```
+
+#### Full Data
+
+Below is a summary of the most frequent words base on the full sampled data:
 
 ```{r echo=FALSE}
 sample_freq <- readRDS("presentation_data/sample_frequency.Rda")
@@ -55,11 +91,13 @@ wordcloud(names(sample_freq), sample_freq, min.freq = 25, random.order = FALSE, 
 barplot(sample_freq[1:10], main = "Top Ten Words")
 ```
 
+## Future Plans
+We will use the sampled data analyzed above to create a statistical model (based on [N-grams/Markov Models](https://en.wikipedia.org/wiki/n-grams)) to predict the next word in a phrase/sentence. The model created will subsequently be tested and tweaked to strike a good balance between accuracy and speed. This will be an iterative process and may require additional techniques (such as [Katz's back-off model](https://en.wikipedia.org/wiki/Katz%27s_back-off_model) and/or new data sources.
 
 
 ## Appendix
 
-Full R processing code below
+Below is the full R processing code used in part to generate this report:
 
 ```{r, eval=FALSE}
 library(tm)

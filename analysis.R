@@ -4,6 +4,8 @@ library(RWeka)
 library(wordcloud)
 require(openNLP)
 require(reshape)
+set.seed(892)
+sample_pct <- .4
 setwd("~/ACADEMICS/datascience/Final Capstone")
 
 #Corpus files dowloaded from:
@@ -65,8 +67,65 @@ twitter_love_hate_ratio <- twitter_num_love / twitter_hate_num
 bs_line <- twitter_data[grepl("biostats", twitter_data)]
 chess_line_cnt <- sum(grepl("A computer once beat me at chess, but it was no match for me at kickboxing", twitter_data, ignore.case = T) == TRUE)
 
-#Create samples for further processing
-set.seed(892)
+####################### Analyze Blogs Data
+blogs_data_sample <- blogs_data[sample(1:blogs_lines, blogs_lines*sample_pct)]
+blogs_cp <- Corpus(VectorSource(list(blogs_data_sample)))
+
+#Clean up corpus
+blogs_cp <- tm_map(blogs_cp, removeNumbers)
+blogs_cp <- tm_map(blogs_cp, removePunctuation)
+blogs_cp <- tm_map(blogs_cp, stripWhitespace)
+
+#Create doc term matrix
+blogs_dtm <- DocumentTermMatrix(blogs_cp, control = list(stopwords = TRUE))
+
+#Find frequent words
+blogs_dtm_mtrx <- as.matrix(blogs_dtm)
+blogs_frequency <- colSums(blogs_dtm_mtrx)
+blogs_frequency <- sort(blogs_frequency, decreasing = TRUE)
+saveRDS(blogs_frequency, "data/blogs_frequency.Rda")
+
+######################## Analyze News Data
+news_data_sample <- news_data[sample(1:news_lines, news_lines*sample_pct)]
+news_cp <- Corpus(VectorSource(list(news_data_sample)))
+
+#Clean up corpus
+news_cp <- tm_map(news_cp, removeNumbers)
+news_cp <- tm_map(news_cp, removePunctuation)
+news_cp <- tm_map(news_cp, removeWords, stopwords('english'))
+news_cp <- tm_map(news_cp, stripWhitespace)
+
+#Create doc term matrix
+news_dtm <- DocumentTermMatrix(news_cp)
+
+#Find frequent words
+news_dtm_mtrx <- as.matrix(news_dtm)
+news_frequency <- colSums(news_dtm_mtrx)
+news_frequency <- sort(news_frequency, decreasing = TRUE)
+saveRDS(news_frequency, "data/news_frequency.Rda")
+
+######################## Analyze Twitter Data
+twitter_data_sample <- twitter_data[sample(1:twitter_lines, twitter_lines*sample_pct)]
+twitter_cp <- Corpus(VectorSource(list(twitter_data_sample)))
+
+#Clean up corpus
+twitter_cp <- tm_map(twitter_cp, removeNumbers)
+twitter_cp <- tm_map(twitter_cp, removePunctuation)
+twitter_cp <- tm_map(twitter_cp, removeWords, stopwords('english'))
+twitter_cp <- tm_map(twitter_cp, stripWhitespace)
+
+#Create doc term matrix
+twitter_dtm <- DocumentTermMatrix(twitter_cp)
+
+#Find frequent words
+twitter_dtm_mtrx <- as.matrix(twitter_dtm)
+twitter_frequency <- colSums(twitter_dtm_mtrx)
+twitter_frequency <- sort(twitter_frequency, decreasing = TRUE)
+saveRDS(twitter_frequency, "data/twitter_frequency.Rda")
+
+
+######################## Analyze Full Data
+#Create smaller samples for further processing of combined corpus
 sample_pct <- .1
 blogs_data_sample <- blogs_data[sample(1:blogs_lines, blogs_lines*sample_pct)]
 news_data_sample <- news_data[sample(1:news_lines, news_lines*sample_pct)]
