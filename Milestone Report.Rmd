@@ -19,7 +19,7 @@ opts_chunk$set(warning = FALSE, message = FALSE)
 library(wordcloud)
 setwd("~/ACADEMICS/datascience/Final Capstone")
 flist <- list.files("data", "+._frequency\\.Rda$|corpus_stats\\.Rda", full.names = TRUE)
-file.copy(flist, "presentation_data")
+xcp <- file.copy(flist, "presentation_data")
 corpus_table <- readRDS(file="presentation_data/corpus_stats.Rda")
 ```
 
@@ -35,7 +35,7 @@ kable(corpus_table,
 Blogs, our largest file, has the most number of words (over 37 million) but the least number of lines. The longest line in the blogs file (over 40 thousand characters) indicate that this file comprises of longer sentences and lengthier expression of ideas. News, our second largest file, also has the second largest number of lines (over 1 million), number of words (over 34 million) and longest line (over 11 thousand). I would consider the news file a good middle ground for sentence length and variety of word usage and ideas. Lastly, our Twitter file comprises of short phrases (maximum 140 characters). The Twitter file consequently has the most number of lines (over 2 million) and the least number of words (over 30 million).
 
 ### Sampling
-Due to the large size of these files, processing the entire contents on a local computer proved to be time consuming. So, I chose to sample the data in order to move forward as quickly as possible. For each individual corpus, I chose to randomly sample 40% (configurable) of the document prior to performing exploratory analysis. After performing exploratory analysis on each individual corpus, I chose to set a sampling percentage of 10% (configurable) for each file and combined them into a single file. The code below is how this was accomplished for the full sample:
+Due to the large size of these files, processing the entire contents on a local computer proved to be very time consuming. So, I chose to sample the data in order to move forward as quickly as possible. For each individual corpus, I chose to randomly sample 40% (configurable) of the document prior to performing exploratory analysis. After performing exploratory analysis on each individual corpus, I chose to set a sampling percentage of 10% (configurable) for each file and combined them into a single file. The code below is how this was accomplished for the full sample:
 
 ```{r eval=FALSE}
 set.seed(892)
@@ -47,7 +47,7 @@ sample_data <- list(blogs_data_sample, news_data_sample, twitter_data_sample)
 ```
 
 ### Common Words
-Words were independently analyzed in each of the corpus files (at a higher sample rate of 40%). Subsequently all files were combined and analyzed (at a lower sample rate of 10%). The most frequent words varied per corpus, however, the words "will", "just", and "can" made the top 10 in all 3 documents. The barplots and word clouds graphics below shows the details.
+Words were independently analyzed in each of the corpus files (at the higher sample rate of 40%). Subsequently all files were combined and analyzed (at a lower sample rate of 10%). The most frequent words varied per corpus, however, the words "will", "just", and "can" made the top 10 in all 3 documents. The barplot and word cloud graphics below show the details.
 
 #### Blogs Data File
 Below is a summary of the most frequent words based on the **blogs** sampled data:
@@ -70,7 +70,6 @@ barplot(sample_freq[1:10], main = "Top Ten Words")
 ```
 
 #### Twitter Data File
-
 Below is a summary of the most frequent words based on the **twitter** sampled data:
 
 ```{r echo=FALSE}
@@ -81,8 +80,7 @@ barplot(sample_freq[1:10], main = "Top Ten Words")
 ```
 
 #### Full Data
-
-Below is a summary of the most frequent words base on the full sampled data:
+Below is a summary of the most frequent words base on the **full** sampled data:
 
 ```{r echo=FALSE}
 sample_freq <- readRDS("presentation_data/sample_frequency.Rda")
@@ -106,6 +104,8 @@ library(RWeka)
 library(wordcloud)
 require(openNLP)
 require(reshape)
+set.seed(892)
+sample_pct <- .4
 setwd("~/ACADEMICS/datascience/Final Capstone")
 
 #Corpus files dowloaded from:
@@ -156,7 +156,6 @@ corpus_stats <- data.frame( "Files" = c("Blogs", "News", "Twitter"),
 ############################ Exploratory Analysis ################################################
 
 saveRDS(corpus_stats, "data/corpus_stats.Rda")
-
 ##################################################################################################
 
 #search for specific word ratios
@@ -168,8 +167,65 @@ twitter_love_hate_ratio <- twitter_num_love / twitter_hate_num
 bs_line <- twitter_data[grepl("biostats", twitter_data)]
 chess_line_cnt <- sum(grepl("A computer once beat me at chess, but it was no match for me at kickboxing", twitter_data, ignore.case = T) == TRUE)
 
-#Create samples for further processing
-set.seed(892)
+####################### Analyze Blogs Data
+blogs_data_sample <- blogs_data[sample(1:blogs_lines, blogs_lines*sample_pct)]
+blogs_cp <- Corpus(VectorSource(list(blogs_data_sample)))
+
+#Clean up corpus
+blogs_cp <- tm_map(blogs_cp, removeNumbers)
+blogs_cp <- tm_map(blogs_cp, removePunctuation)
+blogs_cp <- tm_map(blogs_cp, stripWhitespace)
+
+#Create doc term matrix
+blogs_dtm <- DocumentTermMatrix(blogs_cp, control = list(stopwords = TRUE))
+
+#Find frequent words
+blogs_dtm_mtrx <- as.matrix(blogs_dtm)
+blogs_frequency <- colSums(blogs_dtm_mtrx)
+blogs_frequency <- sort(blogs_frequency, decreasing = TRUE)
+saveRDS(blogs_frequency, "data/blogs_frequency.Rda")
+
+######################## Analyze News Data
+news_data_sample <- news_data[sample(1:news_lines, news_lines*sample_pct)]
+news_cp <- Corpus(VectorSource(list(news_data_sample)))
+
+#Clean up corpus
+news_cp <- tm_map(news_cp, removeNumbers)
+news_cp <- tm_map(news_cp, removePunctuation)
+news_cp <- tm_map(news_cp, removeWords, stopwords('english'))
+news_cp <- tm_map(news_cp, stripWhitespace)
+
+#Create doc term matrix
+news_dtm <- DocumentTermMatrix(news_cp)
+
+#Find frequent words
+news_dtm_mtrx <- as.matrix(news_dtm)
+news_frequency <- colSums(news_dtm_mtrx)
+news_frequency <- sort(news_frequency, decreasing = TRUE)
+saveRDS(news_frequency, "data/news_frequency.Rda")
+
+######################## Analyze Twitter Data
+twitter_data_sample <- twitter_data[sample(1:twitter_lines, twitter_lines*sample_pct)]
+twitter_cp <- Corpus(VectorSource(list(twitter_data_sample)))
+
+#Clean up corpus
+twitter_cp <- tm_map(twitter_cp, removeNumbers)
+twitter_cp <- tm_map(twitter_cp, removePunctuation)
+twitter_cp <- tm_map(twitter_cp, removeWords, stopwords('english'))
+twitter_cp <- tm_map(twitter_cp, stripWhitespace)
+
+#Create doc term matrix
+twitter_dtm <- DocumentTermMatrix(twitter_cp)
+
+#Find frequent words
+twitter_dtm_mtrx <- as.matrix(twitter_dtm)
+twitter_frequency <- colSums(twitter_dtm_mtrx)
+twitter_frequency <- sort(twitter_frequency, decreasing = TRUE)
+saveRDS(twitter_frequency, "data/twitter_frequency.Rda")
+
+
+######################## Analyze Full Data
+#Create smaller samples for further processing of combined corpus
 sample_pct <- .1
 blogs_data_sample <- blogs_data[sample(1:blogs_lines, blogs_lines*sample_pct)]
 news_data_sample <- news_data[sample(1:news_lines, news_lines*sample_pct)]
