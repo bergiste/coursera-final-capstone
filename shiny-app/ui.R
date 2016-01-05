@@ -10,8 +10,8 @@ shinyUI(   fluidPage(
     mainPanel(
         p("Type a word, or incomplete phrase/sentence:"),
         textInput("inputTxt", "Type in word(s) below:"),
-        actionButton("goButton", "Predict Next Words"),
-        p(textOutput("predictions"))
+        p(span(textOutput("predictions"))),
+        uiOutput("word2")
         
     )
 )) 

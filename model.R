@@ -1,9 +1,10 @@
 library(tm)
 setwd("~/ACADEMICS/datascience/Final Capstone")
 
-bigram <- readRDS(file="data/final_bigram.Rda")
-trigram <- readRDS(file="data/final_trigram.Rda")
-fourgram <- readRDS(file="data/final_fourgram.Rda")
+bigram <- readRDS(file="data/final_bigram_sm.Rda")
+trigram <- readRDS(file="data/final_trigram_sm.Rda")
+fourgram <- readRDS(file="data/final_fourgram_sm.Rda")
+
 
 nextWordPredictor <- function(inputTxt) {
     #clean input
@@ -74,4 +75,6 @@ nextWordPredictor <- function(inputTxt) {
     as.character(predList)
     
 }
-
+# ptm <- proc.time()
+# nextWordPredictor("the world")
+# proc.time() - ptm

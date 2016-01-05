@@ -273,3 +273,12 @@ saveRDS(final_unigram, file = "data/final_unigram.Rda")
 saveRDS(final_bigram, file = "data/final_bigram.Rda")
 saveRDS(final_trigram, file = "data/final_trigram.Rda")
 saveRDS(final_fourgram, file = "data/final_fourgram.Rda")
+
+#Significantly reduce data size by only keeping grams greater than the avg count
+final_bigram_sm <- final_bigram[final_bigram$freq > mean(final_bigram$freq),]
+final_trigram_sm <- final_trigram[final_trigram$freq > mean(final_trigram$freq),]
+final_fourgram_sm <- final_fourgram[final_fourgram$freq > mean(final_fourgram$freq),]
+
+saveRDS(final_bigram_sm, file = "data/final_bigram_sm.Rda")
+saveRDS(final_trigram_sm, file = "data/final_bigram_sm.Rda")
+saveRDS(final_fourgram_sm, file = "data/final_bigram_sm.Rda")

@@ -1,11 +1,15 @@
 library(shiny)
+
 source("~/ACADEMICS/datascience/Final Capstone/model.R")
+
 shinyServer(
     function(input, output){
-        prediction <- eventReactive(input$goButton,{
+        prediction <- reactive({
             nextWordPredictor(input$inputTxt)
         })
 
-        output$predictions <- renderPrint({prediction()})
+        output$predictions <- renderText({prediction()})
+        
+        #output$word2 <- renderUI(renderText("prediction()"))
     
 })
