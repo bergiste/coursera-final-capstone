@@ -17,11 +17,14 @@ us_txt_dir <- "final/en_US/"
 blogs_txt <- paste(us_txt_dir, "en_US.blogs.txt", sep = "")
 news_txt <- paste(us_txt_dir, "en_US.news.txt", sep = "")
 twitter_txt <- paste(us_txt_dir, "en_US.twitter.txt", sep = "")
+#Source http://www.freewebheaders.com/full-list-of-bad-words-banned-by-google/
+bad_words_txt <- paste(us_txt_dir, "bad-words-by-google.txt", sep = "")
 
 #Load text into R. Lowecase to normalize future operations
 blogs_data <- tolower(readLines(blogs_txt, skipNul = T))
 news_data <- tolower(readLines(news_txt, skipNul = T))
 twitter_data <- tolower(readLines(twitter_txt, skipNul = T))
+bad_words_data <- readLines(bad_words_txt, skipNul = T)
 
 blogs_size <- round(file.size(blogs_txt)/1048576, 2)
 news_size <- round(file.size(news_txt)/1048576, 2)
@@ -136,6 +139,7 @@ sample_data <- list(blogs_data_sample, news_data_sample, twitter_data_sample)
 cp <- Corpus(VectorSource(sample_data))
 
 #Clean up corpus
+cp <- tm_map(cp, removeWords, bad_words_data )
 cp <- tm_map(cp, removeNumbers)
 cp <- tm_map(cp, removePunctuation)
 cp <- tm_map(cp, stripWhitespace)
@@ -159,7 +163,12 @@ ngramTokenizer <- function(l) {
 
 #generate unigram data set
 generateNgramData <- function(n) {
-    ng_tdm <- TermDocumentMatrix(cp, control = list(tokenize = ngramTokenizer(n)))
+    if(n == 1) {
+        ng_tdm <- TermDocumentMatrix(cp)
+    } else {
+        ng_tdm <- TermDocumentMatrix(cp, control = list(tokenize = ngramTokenizer(n)))
+    }
+    
     ng_matrix <- as.matrix(ng_tdm)
     ng_matrix <- rowSums(ng_matrix)
     ng_matrix <- sort(ng_matrix, decreasing = TRUE)
@@ -169,14 +178,98 @@ generateNgramData <- function(n) {
     if(n == 3) columns <- c('one', 'two', 'three')
     if(n == 4) columns <- c('one', 'two', 'three', 'four')
     
-    final_ngram <- transform(final_ngram, terms = colsplit(terms, split = " ", names = columns ))
+    if(n > 1) {
+        final_ngram <- transform(final_ngram, terms = colsplit(terms, split = " ", names = columns ))
+    }
+    
+    rownames(final_ngram) <- NULL
     final_ngram
 }
-final_unigram <- generateNgramData(2)
-final_bigram <- generateNgramData(3)
-final_trigram <- generateNgramData(4)
+final_unigram <- generateNgramData(1)
+final_bigram <- generateNgramData(2)
+final_trigram <- generateNgramData(3)
+final_fourgram <- generateNgramData(4)
+
+#Calculate probabilities
+unigram_count <- sum(final_unigram$freq)
+bigram_count <- sum(final_bigram$freq)
+trigram_count <- sum(final_trigram$freq)
+fourgram_count <- sum(final_fourgram$freq)
+
+final_unigram <- transform(final_unigram, p = freq / unigram_count, pw = 0)
+final_bigram <- transform(final_bigram, p = freq / bigram_count, pone = 0, termone = terms$one, termtwo = terms$two, terms = NULL)
+final_trigram <- transform(final_trigram, p = freq / trigram_count, pw = 0, termone = terms$one, termtwo = terms$two, termthree = terms$three, terms = NULL)
+final_fourgram <- transform(final_fourgram, p = freq / fourgram_count, pw = 0, termone = terms$one, termtwo = terms$two, termthree = terms$three, termfour = terms$four, terms = NULL)
+
+unigram_sample <- final_unigram[final_unigram$freq > 36.5,]
+bigram_sample <- final_bigram[sample(1:50000,10),]
+trigram_sample <- final_trigram[1:100,]
+fourgram_sample <- final_fourgram[1:100,]
+
+
+calcWeightedProbabilities <- function(data, n) {
+
+     for(i in 1:nrow(unigram_sample)){
+         term <- as.character(unigram_sample[i,]$terms)
+         p <- unigram_sample[i,]$p
+         #q <- nrow(data[data$termone == term,])
+         #if(q > 0) 
+         tryCatch({
+            data[data$termone == term,]$pw <- p
+         },  error=function(e) NULL)
+         
+#          f1 <- 0 
+#          f2 <- 0
+#          f3 <- 0
+#          f4 <- 0
+#          
+#          freq <- data[i,2]
+#         
+#         one <- as.character(data[i,]$terms$one)
+#         two <- as.character(data[i,]$terms$two)
+#         
+#         f1 <-  final_unigram[final_unigram$terms == one,]$freq
+#         f2 <-  final_unigram[final_unigram$terms == two,]$freq
+#         
+#         count <- bigram_count
+#         
+#         if(n > 2) {
+#             three <- as.character(data[i,]$terms$three)
+#             f3 <-  final_unigram[final_unigram$terms == three,]$freq
+#             count <- trigram_count
+#         }
+#         
+#         if(n > 3) {
+#             four <- as.character(data[i,]$terms$four)
+#             f4 <-  final_unigram[final_unigram$terms == four,]$freq
+#             count <- fourgram_count
+#         }
+#         
+#         if(length(f1) == 0) f1 <- 0 
+#         if(length(f2) == 0) f2 <- 0
+#         if(length(f3) == 0) f3 <- 0
+#         if(length(f4) == 0) f4 <- 0
+#             
+#          data[i,]$pw <- (freq + f1 + f2 + f3 + f4) / (count+unigram_count)
+     }
+    
+    data
+}
+
+#ptm <- proc.time()
+final_bigram <- calcWeightedProbabilities(final_bigram, 2)
+# end <- proc.time() - ptm
+# secs <- end[3]
+# mins <- secs/10*2855089/60
+# hrs <- mins/60
+# paste(mins, "min", hrs, "hrs")
+gc()
+
+final_trigram <- calcWeightedProbabilities(final_trigram, 3)
+final_fourgram <- calcWeightedProbabilities(final_fourgram, 4)
 
 #save final output for fast performace of Shiny App
 saveRDS(final_unigram, file = "data/final_unigram.Rda")
 saveRDS(final_bigram, file = "data/final_bigram.Rda")
 saveRDS(final_trigram, file = "data/final_trigram.Rda")
+saveRDS(final_fourgram, file = "data/final_fourgram.Rda")

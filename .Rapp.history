@@ -1,0 +1,3 @@
+load("/Users/bergiste/ACADEMICS/datascience/Final Capstone/final3Data.RData")
+test <- readRDS("/Users/bergiste/ACADEMICS/datascience/Final Capstone/final3Data.RData")
+head(test)
