@@ -65,7 +65,7 @@ nextWordPredictor <- function(inputTxt) {
     }
     
     #Return top n predictors
-    n <- 5
+    n <- 4
     tp <- length(predList)
     
     if( tp >= n){

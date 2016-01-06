@@ -3,13 +3,47 @@ library(shiny)
 source("~/ACADEMICS/datascience/Final Capstone/model.R")
 
 shinyServer(
-    function(input, output){
+    function(input, output, session){
+        
+        
         prediction <- reactive({
             nextWordPredictor(input$inputTxt)
         })
-
-        output$predictions <- renderText({prediction()})
         
-        #output$word2 <- renderUI(renderText("prediction()"))
+        output$words <- renderUI( {
+            predictWords <- prediction()
+            assign('savedWords', predictWords, envir=.GlobalEnv)
+            n <- length(predictWords)
+            if( n > 0) {
+                buttons <- list()
+                for(i in 1:n) {
+                    buttons <- list(buttons, list(
+                        actionButton(inputId = paste("word",i, sep = ""), label =predictWords[i])
+                    ))
+                }
+               
+                tagList(
+                   buttons 
+                )
+            } else {
+                tagList("") 
+            }
+        })
+        
+        observeEvent(input$word1, {
+            updateTextInput(session, "inputTxt", value = paste(input$inputTxt, get('savedWords', envir=.GlobalEnv)[1]))
+        })
+        
+        observeEvent(input$word2, {
+            updateTextInput(session, "inputTxt", value = paste(input$inputTxt, get('savedWords', envir=.GlobalEnv)[2]))
+        })
+        
+        observeEvent(input$word3, {
+            updateTextInput(session, "inputTxt", value = paste(input$inputTxt, get('savedWords', envir=.GlobalEnv)[3]))
+        })
+        
+        observeEvent(input$word4, {
+            updateTextInput(session, "inputTxt", value = paste(input$inputTxt, get('savedWords', envir=.GlobalEnv)[4]))
+        })
     
 })
