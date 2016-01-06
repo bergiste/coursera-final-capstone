@@ -1,6 +1,6 @@
 library(shiny)
 
-source("~/ACADEMICS/datascience/Final Capstone/model.R")
+source("./model.R")
 
 shinyServer(
     function(input, output, session){

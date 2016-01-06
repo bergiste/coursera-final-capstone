@@ -1,5 +1,4 @@
 library(tm)
-setwd("~/ACADEMICS/datascience/Final Capstone")
 
 bigram <- readRDS(file="data/final_bigram_sm.Rda")
 trigram <- readRDS(file="data/final_trigram_sm.Rda")
