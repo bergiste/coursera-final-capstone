@@ -14,7 +14,7 @@ shinyServer(
             predictWords <- prediction()
             assign('savedWords', predictWords, envir=.GlobalEnv)
             n <- length(predictWords)
-            if( n > 0) {
+            if( n > 0 && nchar(predictWords) > 0) {
                 buttons <- list()
                 for(i in 1:n) {
                     buttons <- list(buttons, list(
