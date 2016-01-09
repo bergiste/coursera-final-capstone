@@ -17,7 +17,12 @@ nextWordPredictor <- function(inputTxt) {
         #split into words
         inputList <- unlist(strsplit(inputTxt, " "))
         
+        print(inputList)
+        
+        
         numWords <- length(inputList)
+        
+        print(numWords)
         
         runBigram <- function(words){
             bigram[bigram$terms$one == words,]$terms$two
@@ -36,7 +41,7 @@ nextWordPredictor <- function(inputTxt) {
         
         if(numWords == 1) {
             #print("running bigram")
-            predList <- runBigram(inputTxt)
+            predList <- runBigram(inputList[1])
         }else if (numWords == 2) {
             #print("running trigram")
             word1 <- inputList[1]
