@@ -28,7 +28,6 @@ Simply start typing on the text field and up to 4 possible next words will autom
 Technical and Statistical Architecture
 ========================================================
 <small>The application uses text documents collected from blogs, news articles, and twitter to statistically model language patterns. [N-Grams](https://en.wikipedia.org/wiki/N-gram), [Markov Model] (https://en.wikipedia.org/wiki/Markov_model) and [Katz's back-off model] (https://en.wikipedia.org/wiki/Katz%27s_back-off_model) were used to predict the next word. The modeling process used a large set of data so it was batched. The batch process created a much smaller set of data to be used in the application for fast real-time performance.  The diagram below show the architecture of the application:</small>
-
 ![Application Architecture Diagram](diagram.png)
 
 
