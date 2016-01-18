@@ -201,23 +201,23 @@ final_bigram <- transform(final_bigram, p = freq / bigram_count, pone = 0, termo
 final_trigram <- transform(final_trigram, p = freq / trigram_count, pw = 0, termone = terms$one, termtwo = terms$two, termthree = terms$three, terms = NULL)
 final_fourgram <- transform(final_fourgram, p = freq / fourgram_count, pw = 0, termone = terms$one, termtwo = terms$two, termthree = terms$three, termfour = terms$four, terms = NULL)
 
-unigram_sample <- final_unigram[final_unigram$freq > 36.5,]
-bigram_sample <- final_bigram[sample(1:50000,10),]
-trigram_sample <- final_trigram[1:100,]
-fourgram_sample <- final_fourgram[1:100,]
-
-
-calcWeightedProbabilities <- function(data, n) {
-
-     for(i in 1:nrow(unigram_sample)){
-         term <- as.character(unigram_sample[i,]$terms)
-         p <- unigram_sample[i,]$p
-         #q <- nrow(data[data$termone == term,])
-         #if(q > 0) 
-         tryCatch({
-            data[data$termone == term,]$pw <- p
-         },  error=function(e) NULL)
-         
+# unigram_sample <- final_unigram[final_unigram$freq > 36.5,]
+# bigram_sample <- final_bigram[sample(1:50000,10),]
+# trigram_sample <- final_trigram[1:100,]
+# fourgram_sample <- final_fourgram[1:100,]
+# 
+# 
+# calcWeightedProbabilities <- function(data, n) {
+# 
+#      for(i in 1:nrow(unigram_sample)){
+#          term <- as.character(unigram_sample[i,]$terms)
+#          p <- unigram_sample[i,]$p
+#          #q <- nrow(data[data$termone == term,])
+#          #if(q > 0) 
+#          tryCatch({
+#             data[data$termone == term,]$pw <- p
+#          },  error=function(e) NULL)
+#          
 #          f1 <- 0 
 #          f2 <- 0
 #          f3 <- 0
@@ -251,22 +251,22 @@ calcWeightedProbabilities <- function(data, n) {
 #         if(length(f4) == 0) f4 <- 0
 #             
 #          data[i,]$pw <- (freq + f1 + f2 + f3 + f4) / (count+unigram_count)
-     }
-    
-    data
-}
-
-#ptm <- proc.time()
-final_bigram <- calcWeightedProbabilities(final_bigram, 2)
+#      }
+#     
+#     data
+# }
+# 
+# #ptm <- proc.time()
+# final_bigram <- calcWeightedProbabilities(final_bigram, 2)
 # end <- proc.time() - ptm
 # secs <- end[3]
 # mins <- secs/10*2855089/60
 # hrs <- mins/60
 # paste(mins, "min", hrs, "hrs")
-gc()
-
-final_trigram <- calcWeightedProbabilities(final_trigram, 3)
-final_fourgram <- calcWeightedProbabilities(final_fourgram, 4)
+# gc()
+# 
+# final_trigram <- calcWeightedProbabilities(final_trigram, 3)
+# final_fourgram <- calcWeightedProbabilities(final_fourgram, 4)
 
 #save final output for fast performace of Shiny App
 saveRDS(final_unigram, file = "data/final_unigram.Rda")
