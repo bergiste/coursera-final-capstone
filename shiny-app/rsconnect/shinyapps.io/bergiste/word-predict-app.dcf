@@ -1,8 +1,8 @@
 name: word-predict-app
 account: bergiste
 server: shinyapps.io
-bundleId: 346298
+bundleId: 351704
 url: https://bergiste.shinyapps.io/word-predict-app/
-when: 1452301342.70708
+when: 1453118994.90704
 asMultiple: FALSE
 asStatic: FALSE

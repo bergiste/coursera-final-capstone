@@ -1,6 +1,6 @@
 library(shiny)
 
-source("./model.R")
+source("./model.R", local = TRUE)
 
 shinyServer(
     function(input, output, session){
